@@ -8,7 +8,7 @@ package sconfig
 import (
 	"reflect"
 
-	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -16,7 +16,7 @@ type Config struct {
 	spec       interface{}
 	envEnabled bool
 	envPrefix  string
-	cmd        *cobra.Command
+	flagSet    *pflag.FlagSet
 }
 
 func New(spec interface{}) *Config {
@@ -29,8 +29,8 @@ func (c *Config) FromEnvironment(envPrefix string) *Config {
 	return c
 }
 
-func (c *Config) BindCommand(cmd *cobra.Command) *Config {
-	c.cmd = cmd
+func (c *Config) BindFlags(flagSet *pflag.FlagSet) *Config {
+	c.flagSet = flagSet
 	return c
 }
 
@@ -41,7 +41,7 @@ func (c *Config) Parse() error {
 		return ErrInvalidSpecification
 	}
 
-	err := c.setFields(v, c.spec)
+	err := c.setFields(v)
 	if err != nil {
 		return err
 	}
@@ -56,8 +56,8 @@ func (c *Config) Parse() error {
 	return v.Unmarshal(c.spec)
 }
 
-func (c *Config) setFields(v *viper.Viper, conf interface{}) error {
-	return forEachStructField(conf, func(field reflect.StructField, value reflect.Value) error {
+func (c *Config) setFields(v *viper.Viper) error {
+	return forEachStructField(c.spec, func(field reflect.StructField, value reflect.Value) error {
 		def, ok := field.Tag.Lookup("default")
 		if ok {
 			v.SetDefault(field.Name, def)
@@ -67,9 +67,9 @@ func (c *Config) setFields(v *viper.Viper, conf interface{}) error {
 			v.BindEnv(field.Name, "")
 		}
 
-		if c.cmd != nil {
+		if c.flagSet != nil {
 			if flag, ok := field.Tag.Lookup("flag"); ok {
-				err := bindPFlag(v, c.cmd, conf, flag, def, field, value)
+				err := bindPFlag(v, c.flagSet, c.spec, flag, def, field, value)
 				if err != nil {
 					return &ErrInvalidField{
 						Field: field.Name,

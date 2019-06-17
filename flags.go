@@ -7,7 +7,6 @@ import (
 	"unsafe"
 
 	"github.com/spf13/cast"
-	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -16,7 +15,7 @@ type flagSetter func(*pflag.FlagSet, string, string, string, interface{}, unsafe
 
 func bindPFlag(
 	v *viper.Viper,
-	cmd *cobra.Command,
+	flagSet *pflag.FlagSet,
 	conf interface{},
 	flag string,
 	defaultValue interface{},
@@ -30,7 +29,6 @@ func bindPFlag(
 		return err
 	}
 
-	flagSet := cmd.PersistentFlags()
 	typ := field.Type
 	ptr := unsafe.Pointer(value.Addr().Pointer())
 

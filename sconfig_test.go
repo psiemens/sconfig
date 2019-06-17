@@ -188,7 +188,7 @@ func TestCommandLineFlags(t *testing.T) {
 	}
 
 	err := sconfig.New(&s).
-		BindCommand(c).
+		BindFlags(c.PersistentFlags()).
 		Parse()
 	if err != nil {
 		t.Fail()
@@ -325,7 +325,7 @@ func TestCommandLineShortFlags(t *testing.T) {
 	}
 
 	err := sconfig.New(&s1).
-		BindCommand(c1).
+		BindFlags(c1.PersistentFlags()).
 		Parse()
 	if err != nil {
 		t.Fail()
@@ -351,7 +351,7 @@ func TestCommandLineShortFlags(t *testing.T) {
 	}
 
 	err = sconfig.New(&s2).
-		BindCommand(c2).
+		BindFlags(c2.PersistentFlags()).
 		Parse()
 	if err != nil {
 		t.Fail()
@@ -402,13 +402,13 @@ func TestEnvironmentAndCommandLineFlags(t *testing.T) {
 
 	err := sconfig.New(&s).
 		FromEnvironment("ENV").
-		BindCommand(c).
+		BindFlags(c.PersistentFlags()).
 		Parse()
 	if err != nil {
 		t.Fail()
 	}
 
-	// override env var with --port flag
+	// override ENV_PORT env var with --port flag
 	err = executeCommand(c, "--port=8080")
 
 	if s.Environment != "TEST" {
@@ -448,7 +448,7 @@ func TestDefaults(t *testing.T) {
 
 	err := sconfig.New(&s).
 		FromEnvironment("ENV").
-		BindCommand(c).
+		BindFlags(c.PersistentFlags()).
 		Parse()
 	if err != nil {
 		t.Fail()
