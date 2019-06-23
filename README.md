@@ -23,7 +23,7 @@ var cmd = &cobra.Command{
 
 func init() {
 	err := sconfig.New(&conf).
-		FromEnvironment("ENV").
+		FromEnvironment("APP").
 		BindFlags(cmd.PersistentFlags()).
 		Parse()
 	if err != nil {
@@ -34,5 +34,5 @@ func init() {
 
 ```bash
 # call with env vars and/or command line flags
-TIMEOUT=5s hello-world --port 8080 -e PRODUCTION
+APP_TIMEOUT=5s hello-world --port 8080 -e PRODUCTION
 ```

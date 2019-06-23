@@ -3,6 +3,7 @@ package sconfig
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 var ErrInvalidSpecification = errors.New("specification must be a struct pointer")
@@ -14,6 +15,17 @@ type ErrInvalidField struct {
 
 func (e *ErrInvalidField) Error() string {
 	return fmt.Sprintf("invalid field %s: %s", e.Field, e.Err.Error())
+}
+
+type ErrRequiredFields struct {
+	Fields []string
+}
+
+func (e *ErrRequiredFields) Error() string {
+	return fmt.Sprintf(
+		"required fields are not set:\n%s",
+		strings.Join(e.Fields, "\n"),
+	)
 }
 
 type ErrUnsupportedFieldType struct {

@@ -7,6 +7,8 @@ package sconfig
 
 import (
 	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -53,7 +55,19 @@ func (c *Config) Parse() error {
 		v.AutomaticEnv()
 	}
 
-	return v.Unmarshal(c.spec)
+	err = v.Unmarshal(c.spec)
+	if err != nil {
+		return err
+	}
+
+	if c.envEnabled {
+		err = c.checkRequiredFields()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Config) setFields(v *viper.Viper) error {
@@ -83,6 +97,31 @@ func (c *Config) setFields(v *viper.Viper) error {
 	})
 }
 
+func (c *Config) checkRequiredFields() error {
+	missingFields := make([]string, 0)
+
+	forEachStructField(c.spec, func(field reflect.StructField, value reflect.Value) error {
+		if required, ok := field.Tag.Lookup("required"); ok {
+			if isTrue(required) && isZero(value) {
+				missingFields = append(
+					missingFields,
+					envVarName(c.envPrefix, field.Name),
+				)
+			}
+		}
+
+		return nil
+	})
+
+	if len(missingFields) != 0 {
+		return &ErrRequiredFields{
+			Fields: missingFields,
+		}
+	}
+
+	return nil
+}
+
 func isStructPointer(s interface{}) bool {
 	p := reflect.ValueOf(s)
 	if p.Kind() != reflect.Ptr {
@@ -106,4 +145,24 @@ func forEachStructField(s interface{}, f func(reflect.StructField, reflect.Value
 	}
 
 	return nil
+}
+
+func isTrue(s string) bool {
+	b, _ := strconv.ParseBool(s)
+	return b
+}
+
+func envVarName(prefix, name string) string {
+	if prefix != "" {
+		return strings.ToUpper(prefix + "_" + name)
+	}
+
+	return strings.ToUpper(name)
+}
+
+func isZero(value reflect.Value) bool {
+	return reflect.DeepEqual(
+		value.Interface(),
+		reflect.Zero(reflect.TypeOf(value.Interface())).Interface(),
+	)
 }

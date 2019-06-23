@@ -471,6 +471,46 @@ func TestDefaults(t *testing.T) {
 	}
 }
 
+func TestRequiredFields(t *testing.T) {
+	type Specification struct {
+		String        string          `required:"true"`
+		Bool          bool            `required:"true"`
+		Int           int             `required:"true"`
+		Int16         int16           `required:"true"`
+		Int32         int32           `required:"true"`
+		Int64         int64           `required:"true"`
+		Uint          uint            `required:"true"`
+		Uint8         uint8           `required:"true"`
+		Uint16        uint16          `required:"true"`
+		Uint32        uint32          `required:"true"`
+		Uint64        uint64          `required:"true"`
+		Float32       float32         `required:"true"`
+		Float64       float64         `required:"true"`
+		Duration      time.Duration   `required:"true"`
+		StringSlice   []string        `required:"true"`
+		BoolSlice     []bool          `required:"true"`
+		IntSlice      []int           `required:"true"`
+		DurationSlice []time.Duration `required:"true"`
+
+		NonRequiredField string `required:"false"`
+	}
+
+	var s Specification
+
+	err := sconfig.New(&s).
+		FromEnvironment("ENV").
+		Parse()
+	if err == nil {
+		t.Fatalf("expected error due to missing required fields")
+	}
+
+	errRequiredFields := err.(*sconfig.ErrRequiredFields)
+
+	if len(errRequiredFields.Fields) != 18 {
+		t.Errorf("failed to detect all empty fields")
+	}
+}
+
 func executeCommand(root *cobra.Command, args ...string) error {
 	buf := new(bytes.Buffer)
 	root.SetOutput(buf)
