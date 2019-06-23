@@ -11,14 +11,21 @@ import (
 	"github.com/spf13/viper"
 )
 
-type flagSetter func(*pflag.FlagSet, string, string, string, interface{}, unsafe.Pointer)
+type flagSetter func(
+	flagSet *pflag.FlagSet,
+	longFlag string,
+	shortFlag string,
+	info string,
+	def interface{},
+	ptr unsafe.Pointer,
+)
 
 func bindPFlag(
 	v *viper.Viper,
 	flagSet *pflag.FlagSet,
 	conf interface{},
 	flag string,
-	defaultValue interface{},
+	def interface{},
 	field reflect.StructField,
 	value reflect.Value,
 ) error {
@@ -87,13 +94,15 @@ func bindPFlag(
 		return &ErrUnsupportedFieldType{Type: typ.Name()}
 	}
 
-	setFlag(flagSet, longFlag, shortFlag, info, defaultValue, ptr)
+	setFlag(flagSet, longFlag, shortFlag, info, def, ptr)
 	v.BindPFlag(longFlag, flagSet.Lookup(longFlag))
 
 	return nil
 }
 
-func parseFlagOptions(flag string) (longFlag string, shortFlag string, err error) {
+func parseFlagOptions(
+	flag string,
+) (longFlag string, shortFlag string, err error) {
 	flags := strings.Split(flag, ",")
 
 	if len(flags) == 1 {
@@ -114,74 +123,74 @@ func isDurationType(typ reflect.Type) bool {
 	return typ.PkgPath() == "time" && typ.Name() == "Duration"
 }
 
-func setStringFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.StringVarP((*string)(ptr), lf, sf, cast.ToString(dft), info)
+func setStringFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.StringVarP((*string)(ptr), lf, sf, cast.ToString(def), info)
 }
 
-func setBoolFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.BoolVarP((*bool)(ptr), lf, sf, cast.ToBool(dft), info)
+func setBoolFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.BoolVarP((*bool)(ptr), lf, sf, cast.ToBool(def), info)
 }
 
-func setIntFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.IntVarP((*int)(ptr), lf, sf, cast.ToInt(dft), info)
+func setIntFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.IntVarP((*int)(ptr), lf, sf, cast.ToInt(def), info)
 }
 
-func setInt16Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Int16VarP((*int16)(ptr), lf, sf, cast.ToInt16(dft), info)
+func setInt16Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Int16VarP((*int16)(ptr), lf, sf, cast.ToInt16(def), info)
 }
 
-func setInt32Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Int32VarP((*int32)(ptr), lf, sf, cast.ToInt32(dft), info)
+func setInt32Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Int32VarP((*int32)(ptr), lf, sf, cast.ToInt32(def), info)
 }
 
-func setInt64Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Int64VarP((*int64)(ptr), lf, sf, cast.ToInt64(dft), info)
+func setInt64Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Int64VarP((*int64)(ptr), lf, sf, cast.ToInt64(def), info)
 }
 
-func setUintFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.UintVarP((*uint)(ptr), lf, sf, cast.ToUint(dft), info)
+func setUintFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.UintVarP((*uint)(ptr), lf, sf, cast.ToUint(def), info)
 }
 
-func setUint8Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Uint8VarP((*uint8)(ptr), lf, sf, cast.ToUint8(dft), info)
+func setUint8Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Uint8VarP((*uint8)(ptr), lf, sf, cast.ToUint8(def), info)
 }
 
-func setUint16Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Uint16VarP((*uint16)(ptr), lf, sf, cast.ToUint16(dft), info)
+func setUint16Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Uint16VarP((*uint16)(ptr), lf, sf, cast.ToUint16(def), info)
 }
 
-func setUint32Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Uint32VarP((*uint32)(ptr), lf, sf, cast.ToUint32(dft), info)
+func setUint32Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Uint32VarP((*uint32)(ptr), lf, sf, cast.ToUint32(def), info)
 }
 
-func setUint64Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Uint64VarP((*uint64)(ptr), lf, sf, cast.ToUint64(dft), info)
+func setUint64Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Uint64VarP((*uint64)(ptr), lf, sf, cast.ToUint64(def), info)
 }
 
-func setDurationFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.DurationVarP((*time.Duration)(ptr), lf, sf, cast.ToDuration(dft), info)
+func setDurationFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.DurationVarP((*time.Duration)(ptr), lf, sf, cast.ToDuration(def), info)
 }
 
-func setFloat32Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Float32VarP((*float32)(ptr), lf, sf, cast.ToFloat32(dft), info)
+func setFloat32Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Float32VarP((*float32)(ptr), lf, sf, cast.ToFloat32(def), info)
 }
 
-func setFloat64Flag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.Float64VarP((*float64)(ptr), lf, sf, cast.ToFloat64(dft), info)
+func setFloat64Flag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.Float64VarP((*float64)(ptr), lf, sf, cast.ToFloat64(def), info)
 }
 
-func setStringSliceFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.StringSliceVarP((*[]string)(ptr), lf, sf, cast.ToStringSlice(dft), info)
+func setStringSliceFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.StringSliceVarP((*[]string)(ptr), lf, sf, cast.ToStringSlice(def), info)
 }
 
-func setBoolSliceFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.BoolSliceVarP((*[]bool)(ptr), lf, sf, cast.ToBoolSlice(dft), info)
+func setBoolSliceFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.BoolSliceVarP((*[]bool)(ptr), lf, sf, cast.ToBoolSlice(def), info)
 }
 
-func setIntSliceFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.IntSliceVarP((*[]int)(ptr), lf, sf, cast.ToIntSlice(dft), info)
+func setIntSliceFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.IntSliceVarP((*[]int)(ptr), lf, sf, cast.ToIntSlice(def), info)
 }
 
-func setDurationSliceFlag(fs *pflag.FlagSet, lf, sf, info string, dft interface{}, ptr unsafe.Pointer) {
-	fs.DurationSliceVarP((*[]time.Duration)(ptr), lf, sf, cast.ToDurationSlice(dft), info)
+func setDurationSliceFlag(fs *pflag.FlagSet, lf, sf, info string, def interface{}, ptr unsafe.Pointer) {
+	fs.DurationSliceVarP((*[]time.Duration)(ptr), lf, sf, cast.ToDurationSlice(def), info)
 }

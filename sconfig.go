@@ -50,7 +50,8 @@ func (c *Config) Parse() error {
 
 	if c.envEnabled {
 		// Automatically parse environment variables
-		// Example: "MYAPP_PORT" will map to "Port", where "MYAPP" is the envPrefix.
+		// Example: "MYAPP_PORT" will map to "Port",
+		// where "MYAPP" is the envPrefix.
 		v.SetEnvPrefix(c.envPrefix)
 		v.AutomaticEnv()
 	}
@@ -71,47 +72,50 @@ func (c *Config) Parse() error {
 }
 
 func (c *Config) setFields(v *viper.Viper) error {
-	return forEachStructField(c.spec, func(field reflect.StructField, value reflect.Value) error {
-		def, ok := field.Tag.Lookup("default")
-		if ok {
-			v.SetDefault(field.Name, def)
-		}
+	return forEachStructField(c.spec,
+		func(field reflect.StructField, value reflect.Value) error {
+			def, ok := field.Tag.Lookup("default")
+			if ok {
+				v.SetDefault(field.Name, def)
+			}
 
-		if c.envEnabled {
-			v.BindEnv(field.Name, "")
-		}
+			if c.envEnabled {
+				v.BindEnv(field.Name, "")
+			}
 
-		if c.flagSet != nil {
-			if flag, ok := field.Tag.Lookup("flag"); ok {
-				err := bindPFlag(v, c.flagSet, c.spec, flag, def, field, value)
-				if err != nil {
-					return &ErrInvalidField{
-						Field: field.Name,
-						Err:   err,
+			if c.flagSet != nil {
+				if flag, ok := field.Tag.Lookup("flag"); ok {
+					err := bindPFlag(
+						v, c.flagSet, c.spec, flag, def, field, value)
+					if err != nil {
+						return &ErrInvalidField{
+							Field: field.Name,
+							Err:   err,
+						}
 					}
 				}
 			}
-		}
 
-		return nil
-	})
+			return nil
+		})
 }
 
 func (c *Config) checkRequiredFields() error {
 	missingFields := make([]string, 0)
 
-	forEachStructField(c.spec, func(field reflect.StructField, value reflect.Value) error {
-		if required, ok := field.Tag.Lookup("required"); ok {
-			if isTrue(required) && isZero(value) {
-				missingFields = append(
-					missingFields,
-					envVarName(c.envPrefix, field.Name),
-				)
+	forEachStructField(c.spec,
+		func(field reflect.StructField, value reflect.Value) error {
+			if required, ok := field.Tag.Lookup("required"); ok {
+				if isTrue(required) && isZero(value) {
+					missingFields = append(
+						missingFields,
+						envVarName(c.envPrefix, field.Name),
+					)
+				}
 			}
-		}
 
-		return nil
-	})
+			return nil
+		})
 
 	if len(missingFields) != 0 {
 		return &ErrRequiredFields{
@@ -132,7 +136,10 @@ func isStructPointer(s interface{}) bool {
 	return v.Kind() == reflect.Struct
 }
 
-func forEachStructField(s interface{}, f func(reflect.StructField, reflect.Value) error) error {
+func forEachStructField(
+	s interface{},
+	f func(reflect.StructField, reflect.Value) error,
+) error {
 	t := reflect.TypeOf(s).Elem()
 	v := reflect.ValueOf(s).Elem()
 	for i := 0; i < t.NumField(); i++ {

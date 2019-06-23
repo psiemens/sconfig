@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-var ErrInvalidSpecification = errors.New("specification must be a struct pointer")
+var ErrInvalidSpecification = errors.New(
+	"specification must be a struct pointer")
 
 type ErrInvalidField struct {
 	Field string
