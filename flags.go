@@ -97,6 +97,14 @@ func bindPFlag(
 	setFlag(flagSet, longFlag, shortFlag, info, def, ptr)
 	v.BindPFlag(longFlag, flagSet.Lookup(longFlag))
 
+	deprecated := field.Tag.Get("deprecated")
+	if deprecated != "" {
+		err = flagSet.MarkDeprecated(longFlag, deprecated)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
