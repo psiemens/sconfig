@@ -3,6 +3,7 @@ package sconfig_test
 import (
 	"bytes"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -471,6 +472,39 @@ func TestDefaults(t *testing.T) {
 	}
 }
 
+func TestDeprecatedFlags(t *testing.T) {
+	type Specification struct {
+		Foo string `flag:"foo" deprecated:"use --bar flag instead"`
+		Bar string `flag:"bar"`
+	}
+
+	var s Specification
+
+	c := &cobra.Command{
+		Use:  "c",
+		Args: cobra.ArbitraryArgs,
+		Run:  func(_ *cobra.Command, _ []string) {},
+	}
+
+	err := sconfig.New(&s).
+		BindFlags(c.PersistentFlags()).
+		Parse()
+
+	if err != nil {
+		t.Fail()
+	}
+
+	out, err := executeCommandWithOutput(c, "--foo=hello --bar=world")
+
+	if err != nil {
+		t.Fail()
+	}
+
+	if !strings.Contains(out, "Flag --foo has been deprecated, use --bar flag instead") {
+		t.Errorf("output should contain deprecation warning")
+	}
+}
+
 func TestRequiredFields(t *testing.T) {
 	type Specification struct {
 		String        string          `required:"true"`
@@ -519,4 +553,14 @@ func executeCommand(root *cobra.Command, args ...string) error {
 	_, err := root.ExecuteC()
 
 	return err
+}
+
+func executeCommandWithOutput(root *cobra.Command, args ...string) (string, error) {
+	buf := new(bytes.Buffer)
+	root.SetOut(buf)
+	root.SetArgs(args)
+
+	_, err := root.ExecuteC()
+
+	return buf.String(), err
 }
