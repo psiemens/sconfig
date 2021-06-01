@@ -10,6 +10,9 @@ type Config struct {
     Environment string        `default:"LOCAL" flag:"env,e" info:"application environment"`
     Port        int           `default:"80" flag:"port,p" info:"port to start the server on"`
     Timeout     time.Duration `default:"1s"`
+
+    // Deprecated Flags
+    HostPort int `default:"80" flag:"host-port" deprecated:"use --port flag instead"`
 }
 
 var conf Config
