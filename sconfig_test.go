@@ -195,7 +195,7 @@ func TestCommandLineFlags(t *testing.T) {
 		t.Fail()
 	}
 
-	err = executeCommand(
+	_, err = executeCommand(
 		c,
 		"--string=apple",
 		"--bool",
@@ -333,7 +333,7 @@ func TestCommandLineShortFlags(t *testing.T) {
 	}
 
 	// -h flag is invalid
-	err = executeCommand(
+	_, err = executeCommand(
 		c1,
 		"-e=PROD",
 		"-p=80",
@@ -358,7 +358,7 @@ func TestCommandLineShortFlags(t *testing.T) {
 		t.Fail()
 	}
 
-	err = executeCommand(
+	_, err = executeCommand(
 		c2,
 		"-e=PROD",
 		"-p=80",
@@ -410,7 +410,7 @@ func TestEnvironmentAndCommandLineFlags(t *testing.T) {
 	}
 
 	// override ENV_PORT env var with --port flag
-	err = executeCommand(c, "--port=8080")
+	_, err = executeCommand(c, "--port=8080")
 
 	if s.Environment != "TEST" {
 		t.Errorf("expected %s, got %s", "TEST", s.Environment)
@@ -456,7 +456,7 @@ func TestDefaults(t *testing.T) {
 	}
 
 	// override env var with --port flag
-	err = executeCommand(c, "--port=8080")
+	_, err = executeCommand(c, "--port=8080")
 
 	if s.Environment != "TEST" {
 		t.Errorf("expected %s, got %s", "TEST", s.Environment)
@@ -494,7 +494,7 @@ func TestDeprecatedFlags(t *testing.T) {
 		t.Fail()
 	}
 
-	out, err := executeCommandWithOutput(c, "--foo=hello --bar=world")
+	out, err := executeCommand(c, "--foo=hello --bar=world")
 
 	if err != nil {
 		t.Fail()
@@ -545,17 +545,7 @@ func TestRequiredFields(t *testing.T) {
 	}
 }
 
-func executeCommand(root *cobra.Command, args ...string) error {
-	buf := new(bytes.Buffer)
-	root.SetOutput(buf)
-	root.SetArgs(args)
-
-	_, err := root.ExecuteC()
-
-	return err
-}
-
-func executeCommandWithOutput(root *cobra.Command, args ...string) (string, error) {
+func executeCommand(root *cobra.Command, args ...string) (string, error) {
 	buf := new(bytes.Buffer)
 	root.SetOut(buf)
 	root.SetArgs(args)
