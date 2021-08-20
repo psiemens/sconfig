@@ -4,14 +4,17 @@ Configure your Go applications with a single struct
 ## Example
 
 ```go
-import "github.com/psiemens/sconfig"
+import (
+    "github.com/psiemens/sconfig"
+    "github.com/spf13/cobra"
+)
 
 type Config struct {
     Environment string        `default:"LOCAL" flag:"env,e" info:"application environment"`
     Port        int           `default:"80" flag:"port,p" info:"port to start the server on"`
     Timeout     time.Duration `default:"1s"`
 
-    // Deprecated Flags
+    // Deprecated flags
     HostPort int `default:"80" flag:"host-port" deprecated:"use --port flag instead"`
 }
 
